@@ -1,5 +1,771 @@
 <!DOCTYPE html>
-<html>   < html   超文本标记语言>
-<head><title>Test Page</title></head>< head> < title>测试Page< / title> < / head>
-<body><h1>Hello GitHub Pages</h1></body>Hello GitHub页面Hello GitHub页面Hello GitHub页面
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>柜体表编码提取工具 - 数据库比对版 | 列范围限定(A-N)</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 24px; }
+        h1 { margin: 0 0 8px 0; font-size: 28px; }
+        .sub { color: #5a6874; margin-bottom: 24px; border-left: 4px solid #0d6efd; padding-left: 16px; }
+        .rule-area { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+        .rule-checkbox { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+        .rule-checkbox input { width: 20px; height: 20px; cursor: pointer; }
+        button { background: #0d6efd; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; margin-right: 12px; margin-top: 8px; transition: 0.2s; }
+        button:hover { background: #0b5ed7; transform: scale(1.02); }
+        .btn-outline { background: white; color: #0d6efd; border: 1px solid #0d6efd; }
+        .btn-outline:hover { background: #e7f1ff; }
+        .btn-green { background: #198754; color: white; }
+        .btn-green:hover { background: #157347; }
+        .btn-purple { background: #6f42c1; color: white; }
+        .btn-purple:hover { background: #5c37a6; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #bb2d3b; }
+        .upload-area { border: 2px dashed #adb5bd; border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 16px; transition: 0.2s; }
+        .upload-area:hover { background: #f8f9fa; border-color: #0d6efd; }
+        .db-info { background: #d1e7dd; color: #0f5132; padding: 12px 16px; border-radius: 10px; margin-top: 12px; font-size: 14px; }
+        .db-error { background: #f8d7da; color: #721c24; }
+        .db-warning { background: #fff3cd; color: #856404; }
+        .db-empty { background: #e9ecef; color: #6c757d; }
+        .db-path { background: #e9ecef; color: #0d6efd; padding: 8px 12px; border-radius: 8px; font-family: monospace; font-size: 12px; margin-bottom: 12px; word-break: break-all; }
+        .file-list { background: #e9ecef; border-radius: 12px; padding: 12px 20px; margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .file-tag { background: #0d6efd; color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; }
+        .file-tag .remove { cursor: pointer; background: rgba(255,255,255,0.3); border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; }
+        .preview-grid { overflow-x: auto; margin-top: 16px; max-height: 500px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid #dee2e6; padding: 8px 10px; text-align: left; background: white; }
+        th { background: #e9ecef; position: sticky; top: 0; }
+        .status-found { background: #d1e7dd; color: #0f5132; padding: 2px 8px; border-radius: 20px; display: inline-block; font-size: 12px; }
+        .status-notfound { background: #f8d7da; color: #721c24; padding: 2px 8px; border-radius: 20px; display: inline-block; font-size: 12px; }
+        .stats { background: #e9ecef; border-radius: 12px; padding: 12px 20px; margin-top: 16px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .stat { font-size: 14px; }
+        .stat span { font-weight: bold; font-size: 20px; color: #0d6efd; }
+        .footer { text-align: center; color: #6c757d; font-size: 13px; margin-top: 24px; }
+        .badge-demo { background: #e9ecef; padding: 2px 8px; border-radius: 12px; font-family: monospace; font-size: 12px; margin: 0 4px; }
+        .flex-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .btn-load-db { background: #6f42c1; font-size: 16px; padding: 12px 24px; }
+        .btn-clear-db { background: #dc3545; font-size: 14px; padding: 8px 16px; }
+        hr { margin: 20px 0; }
+        .version-tag { background: #6f42c1; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; display: inline-block; margin-left: 10px; }
+        .alert-update { background: #f8d7da; border-left: 4px solid #dc3545; padding: 12px 16px; margin-bottom: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .button-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .required-version { background: #e9ecef; padding: 4px 12px; border-radius: 20px; font-family: monospace; font-size: 13px; display: inline-block; }
+        .version-match { color: #198754; }
+        .version-mismatch { color: #dc3545; }
+        .rule-highlight { background: #e9ecef; border-left: 4px solid #0d6efd; padding: 8px 16px; margin: 12px 0; border-radius: 12px; font-size: 14px; }
+        .column-limit-badge { background: #0d6efd20; color: #0d6efd; border-radius: 20px; padding: 4px 12px; font-weight: 500; margin-left: 8px; }
+    </style>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>📄 柜体表编码提取工具 - 数据库比对版 <span class="column-limit-badge">🔍 扫描范围: A列 → N列</span></h1>
+        <div class="sub">提取柜体表编码，与软件数据库比对状态 | 新增规则：仅处理Excel工作表第A列至第N列（1~14列）</div>
+
+        <!-- 固定数据库路径提示 -->
+        <div class="db-path">
+            📍 数据库位置：<code>\\192.168.100.51\宁波柏厨\22-跨部门共享\5-工程业务部\柜体表编码提取工具</code><br>
+            💡 说明：复制数据库位置链接，选择最新日期的软件数据库
+        </div>
+
+        <!-- 数据库加载区域 -->
+        <div class="flex-row" style="justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div class="button-group">
+                <button id="loadDbBtn" class="btn-purple btn-load-db">🗄️ 加载数据库</button>
+                <button id="clearDbBtn" class="btn-danger btn-clear-db">🗑️ 清空数据库缓存</button>
+            </div>
+            <div id="savedDbInfo" style="font-size: 12px; color: #6c757d;"></div>
+        </div>
+        
+        <!-- 版本要求提示 -->
+        <div style="margin-top: 12px; font-size: 13px; background: #e9ecef; padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <span>📌 工具当前要求数据库版本：</span>
+            <strong id="requiredVersionDisplay" class="required-version">DB_VERSION:20260603</strong>
+            <span id="versionStatus" style="font-size: 12px;"></span>
+        </div>
+        
+        <div id="dbInfo" class="db-warning" style="margin-top: 12px;">
+            ⏳ 请点击上方「加载数据库」按钮，选择软件数据库文件
+        </div>
+
+        <!-- 版本更新提示区域 -->
+        <div id="updateAlert" style="display: none;" class="alert-update">
+            <span>⚠️ 软件数据库版本与工具要求不匹配！请使用正确版本的数据库文件。</span>
+            <button id="updateReloadBtn" class="btn-outline" style="margin:0; padding:4px 12px;">重新选择数据库</button>
+        </div>
+
+        <hr>
+
+        <!-- 待提取文件上传 -->
+        <div class="upload-area" id="extractUploadArea">
+            📂 点击或拖拽上传多个柜体表 Excel 文件（待提取）—— 自动限定扫描A~N列
+            <input type="file" id="extractFileInput" accept=".xlsx, .xls, .csv" multiple style="display: none;">
+        </div>
+
+        <!-- 文件列表 -->
+        <div id="fileListArea" class="file-list" style="display: none;">
+            <span>📁 已选择文件：</span>
+            <div id="fileTags"></div>
+            <button id="clearFilesBtn" class="btn-outline" style="margin-left: auto; padding: 4px 12px;">清空</button>
+            <button id="processFilesBtn" class="btn-green" style="padding: 4px 16px;">开始提取并比对</button>
+            <span id="progressMsg" class="progress-text"></span>
+        </div>
+
+        <!-- 提取规则 -->
+        <div class="rule-area" style="margin-top: 20px;">
+            <div style="font-weight: 600; margin-bottom: 12px;">🎯 提取规则 & 列范围控制</div>
+            <div class="rule-highlight">
+                ✅ 新增限定规则：<strong>提取时仅扫描 Excel 工作表的 A 列 至 N 列（即列索引 1~14）</strong>，忽略第N列之后的所有单元格，大幅提高处理效率并避免无关干扰。
+            </div>
+            <div class="rule-checkbox"><input type="checkbox" id="enableFormatA" checked> <label>格式A：M + 两位大写字母 + 六位数字（如 MAB123456）</label></div>
+            <div class="rule-checkbox"><input type="checkbox" id="enableFormatB" checked> <label>格式B：6位数字 100001~999999（如 123456）</label></div>
+            <div class="rule-checkbox"><input type="checkbox" id="enableCustomFormat"> <label>自定义：</label><input type="text" id="customRegex" placeholder="例如: \d{3}-\d{4}" style="width:200px;" disabled></div>
+        </div>
+
+        <!-- 结果面板 -->
+        <div id="resultPanel" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <h3>📋 比对结果预览 (扫描范围A~N列)</h3>
+                <div><button id="exportCsvBtn" class="btn-outline">📎 导出合并结果 CSV</button><button id="resetBtn" class="btn-outline">🔄 重置</button></div>
+            </div>
+            <div class="stats" id="statsArea"></div>
+            <div class="preview-grid" id="resultTable"></div>
+        </div>
+        <div class="footer">
+            💡 数据库会保存在浏览器中，下次打开页面自动比对版本。<br>
+            🔔 如数据库版本不匹配，将无法加载，请使用正确版本的数据库文件。<br>
+            🧩 <strong>新增强制列限制</strong>：提取编码时仅遍历每行的第1列(A)至第14列(N)，超出部分自动忽略。
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // 工具要求的数据库版本号
+    // ============================================================
+    const REQUIRED_DB_VERSION = "DB_VERSION:20260603";
+    // ============================================================
+    
+    // DOM 元素
+    const loadDbBtn = document.getElementById('loadDbBtn');
+    const clearDbBtn = document.getElementById('clearDbBtn');
+    const dbInfo = document.getElementById('dbInfo');
+    const savedDbInfo = document.getElementById('savedDbInfo');
+    const updateAlert = document.getElementById('updateAlert');
+    const updateReloadBtn = document.getElementById('updateReloadBtn');
+    const requiredVersionDisplay = document.getElementById('requiredVersionDisplay');
+    const versionStatus = document.getElementById('versionStatus');
+    const extractUploadArea = document.getElementById('extractUploadArea');
+    const extractFileInput = document.getElementById('extractFileInput');
+    const fileListArea = document.getElementById('fileListArea');
+    const fileTags = document.getElementById('fileTags');
+    const clearFilesBtn = document.getElementById('clearFilesBtn');
+    const processFilesBtn = document.getElementById('processFilesBtn');
+    const progressMsg = document.getElementById('progressMsg');
+    const enableFormatA = document.getElementById('enableFormatA');
+    const enableFormatB = document.getElementById('enableFormatB');
+    const enableCustomFormat = document.getElementById('enableCustomFormat');
+    const customRegexInput = document.getElementById('customRegex');
+    const resultPanel = document.getElementById('resultPanel');
+    const resultTableDiv = document.getElementById('resultTable');
+    const statsArea = document.getElementById('statsArea');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // 显示要求的版本号
+    requiredVersionDisplay.textContent = REQUIRED_DB_VERSION;
+    
+    // 数据存储
+    // 数据库存储结构：Map<编码, { status: B列状态, codeStatus: C列编码状态 }>
+    let databaseMap = new Map();
+    let currentDbVersion = "";
+    let savedDbVersion = "";
+    let dbLoaded = false;
+    let selectedFiles = [];
+    let rawResults = [];
+    let mergedResults = [];
+
+    // 更新版本状态显示
+    function updateVersionStatusDisplay(loadedVersion) {
+        if (!loadedVersion) {
+            versionStatus.innerHTML = '';
+            versionStatus.className = '';
+            return;
+        }
+        
+        if (loadedVersion === REQUIRED_DB_VERSION) {
+            versionStatus.innerHTML = '✅ 版本匹配';
+            versionStatus.className = 'version-match';
+        } else {
+            versionStatus.innerHTML = '❌ 版本不匹配（需要：' + REQUIRED_DB_VERSION + '）';
+            versionStatus.className = 'version-mismatch';
+        }
+    }
+
+    // 清空数据库缓存
+    function clearDatabaseCache() {
+        localStorage.removeItem('databaseData');
+        localStorage.removeItem('databaseVersion');
+        databaseMap.clear();
+        currentDbVersion = "";
+        savedDbVersion = "";
+        dbLoaded = false;
+        
+        dbInfo.innerHTML = '🗑️ 数据库缓存已清空！请点击「加载数据库」按钮重新选择软件数据库文件。';
+        dbInfo.className = 'db-empty';
+        savedDbInfo.innerHTML = "";
+        updateAlert.style.display = 'none';
+        updateVersionStatusDisplay("");
+        
+        resultPanel.style.display = "none";
+        rawResults = [];
+        mergedResults = [];
+        
+        console.log('数据库缓存已清空');
+    }
+
+    // 清空按钮点击事件
+    clearDbBtn.addEventListener('click', () => {
+        if (dbLoaded || localStorage.getItem('databaseData')) {
+            const confirmClear = confirm('确定要清空数据库缓存吗？\n\n清空后需要重新加载数据库文件才能继续使用。');
+            if (confirmClear) {
+                clearDatabaseCache();
+            }
+        } else {
+            alert('当前没有缓存的数据库，无需清空。');
+        }
+    });
+
+    // 从 localStorage 加载之前保存的数据库
+    function loadSavedDatabase() {
+        const savedVersion = localStorage.getItem('databaseVersion');
+        const savedData = localStorage.getItem('databaseData');
+        
+        if (savedVersion && savedData) {
+            try {
+                if (savedVersion !== REQUIRED_DB_VERSION) {
+                    console.log('缓存版本不匹配，清除缓存');
+                    clearDatabaseCache();
+                    return false;
+                }
+                
+                const data = JSON.parse(savedData);
+                databaseMap.clear();
+                for (let i = 0; i < data.length; i++) {
+                    databaseMap.set(data[i][0], { 
+                        status: data[i][1], 
+                        codeStatus: data[i][2] || "" 
+                    });
+                }
+                savedDbVersion = savedVersion;
+                currentDbVersion = savedVersion;
+                dbLoaded = true;
+                
+                dbInfo.innerHTML = '✅ 已加载上次使用的数据库，版本：<strong>' + escapeHtml(savedVersion) + '</strong>，共 ' + databaseMap.size + ' 条记录。<br>📌 版本匹配成功！';
+                dbInfo.className = 'db-info';
+                savedDbInfo.innerHTML = '📁 已缓存数据库 (' + databaseMap.size + '条) 版本：' + escapeHtml(savedVersion);
+                updateVersionStatusDisplay(savedVersion);
+                
+                updateAlert.style.display = 'none';
+                return true;
+            } catch(e) {
+                console.warn('加载缓存失败', e);
+                clearDatabaseCache();
+            }
+        }
+        return false;
+    }
+
+    // 保存数据库到 localStorage（包含状态和编码状态）
+    function saveDatabaseToLocal(version) {
+        const data = [];
+        for (let [code, info] of databaseMap) {
+            data.push([code, info.status, info.codeStatus]);
+        }
+        localStorage.setItem('databaseData', JSON.stringify(data));
+        localStorage.setItem('databaseVersion', version);
+        savedDbVersion = version;
+        savedDbInfo.innerHTML = '💾 已保存数据库 (' + databaseMap.size + '条) 版本：' + escapeHtml(version);
+    }
+
+    // 从 Excel 中提取数据库版本
+    function extractDatabaseVersion(rows) {
+        if (rows && rows.length > 0 && rows[0] && rows[0][0]) {
+            const firstCell = String(rows[0][0]).trim();
+            if (firstCell.length > 0) {
+                return firstCell;
+            }
+        }
+        return "未知版本";
+    }
+
+    // 加载数据库文件（读取A列编码，B列状态，C列编码状态）
+    function loadDatabase(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                    
+                    if (!rows || rows.length < 2) {
+                        reject(new Error("数据库至少需要标题行+数据行"));
+                        return;
+                    }
+                    
+                    const dbVersion = extractDatabaseVersion(rows);
+                    
+                    if (dbVersion !== REQUIRED_DB_VERSION) {
+                        reject(new Error('版本不匹配！\n工具要求版本：' + REQUIRED_DB_VERSION + '\n数据库版本：' + dbVersion + '\n\n请使用正确版本的数据库文件。'));
+                        return;
+                    }
+                    
+                    const newMap = new Map();
+                    // 从第2行开始读取（第1行是版本号）
+                    for (let i = 1; i < rows.length; i++) {
+                        const code = rows[i][0] ? String(rows[i][0]).trim() : "";
+                        const status = rows[i][1] ? String(rows[i][1]).trim() : "未知状态";
+                        const codeStatus = rows[i][2] ? String(rows[i][2]).trim() : "";  // C列（索引2）
+                        
+                        if (code) {
+                            newMap.set(code, { status: status, codeStatus: codeStatus });
+                        }
+                    }
+                    
+                    resolve({ map: newMap, version: dbVersion, totalRows: rows.length - 1 });
+                } catch(err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error("文件读取失败"));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    // 加载数据库按钮点击事件
+    loadDbBtn.addEventListener('click', () => {
+        const tempInput = document.createElement('input');
+        tempInput.type = 'file';
+        tempInput.accept = '.xlsx, .xls';
+        tempInput.onchange = async (e) => {
+            if (e.target.files.length) {
+                const file = e.target.files[0];
+                dbInfo.innerHTML = "⏳ 正在加载数据库...";
+                dbInfo.className = 'db-warning';
+                try {
+                    const result = await loadDatabase(file);
+                    databaseMap = result.map;
+                    currentDbVersion = result.version;
+                    dbLoaded = true;
+                    dbInfo.innerHTML = '✅ 数据库加载成功！版本：<strong>' + escapeHtml(result.version) + '</strong>，共 ' + databaseMap.size + ' 条记录。<br>📝 来源：' + escapeHtml(file.name);
+                    dbInfo.className = 'db-info';
+                    updateVersionStatusDisplay(result.version);
+                    saveDatabaseToLocal(result.version);
+                    updateAlert.style.display = 'none';
+                    
+                } catch(err) {
+                    dbInfo.innerHTML = '❌ 加载失败: ' + escapeHtml(err.message);
+                    dbInfo.className = 'db-error';
+                    dbLoaded = false;
+                    updateVersionStatusDisplay("");
+                    if (err.message.indexOf('版本不匹配') >= 0) {
+                        updateAlert.style.display = 'flex';
+                    } else {
+                        updateAlert.style.display = 'none';
+                    }
+                }
+            }
+        };
+        tempInput.click();
+    });
+
+    // 重新加载确认按钮
+    updateReloadBtn.addEventListener('click', () => {
+        loadDbBtn.click();
+    });
+
+    enableCustomFormat.addEventListener('change', function() {
+        customRegexInput.disabled = !this.checked;
+        if (!this.checked) customRegexInput.value = '';
+    });
+
+    // 正则函数
+    function getFormatARegex() { return /M[A-Z]{2}\d{6}/g; }
+    
+    function matchFormatB(text) {
+        const regex = /\b([1-9]\d{5})\b/g;
+        const matches = [];
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            const num = parseInt(match[1], 10);
+            if (num >= 100001 && num <= 999999) matches.push(match[1]);
+        }
+        return matches;
+    }
+
+    function getEnabledPatterns() {
+        const patterns = [];
+        if (enableFormatA.checked) patterns.push({ regex: getFormatARegex(), name: '格式A' });
+        if (enableFormatB.checked) patterns.push({ customMatch: matchFormatB, name: '格式B' });
+        if (enableCustomFormat.checked && customRegexInput.value.trim()) {
+            try { 
+                patterns.push({ regex: new RegExp(customRegexInput.value.trim(), 'g'), name: '自定义' }); 
+            } catch(e) {}
+        }
+        return patterns;
+    }
+
+    // 核心改进: 只提取第1列(A) 至 第14列(N) 的内容 (索引0 ~ 13)
+    function extractAllMatchesWithColumnLimit(cellText, patterns) {
+        if (!cellText || typeof cellText !== 'string') return [];
+        const matches = [], seen = new Set();
+        for (let i = 0; i < patterns.length; i++) {
+            const pattern = patterns[i];
+            if (pattern.customMatch) {
+                const m = pattern.customMatch(cellText);
+                for (let j = 0; j < m.length; j++) {
+                    const val = m[j];
+                    if (!seen.has(val)) { 
+                        seen.add(val); 
+                        matches.push(val); 
+                    }
+                }
+            } else if (pattern.regex) {
+                pattern.regex.lastIndex = 0;
+                let match;
+                while ((match = pattern.regex.exec(cellText)) !== null) {
+                    if (match[0] && !seen.has(match[0])) { 
+                        seen.add(match[0]); 
+                        matches.push(match[0]); 
+                    }
+                }
+            }
+        }
+        return matches;
+    }
+
+    // 新版处理文件: 严格限制列区间为 A～N (列索引 0 到 13)
+    async function processExtractFileWithColumnLimit(file, patterns) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                    
+                    const fileResults = [], uniqueSet = new Set();
+                    if (!rows || rows.length === 0) {
+                        resolve(fileResults);
+                        return;
+                    }
+                    
+                    // 限定最大列索引为 13 (N列, 即第14列)
+                    const MAX_COL_INDEX = 13;   // A=0, N=13
+                    
+                    for (let r = 0; r < rows.length; r++) {
+                        const row = rows[r];
+                        if (!row) continue;
+                        // 仅遍历 0 至 MAX_COL_INDEX（A列~N列）
+                        const limit = Math.min(row.length, MAX_COL_INDEX + 1);
+                        for (let c = 0; c < limit; c++) {
+                            const cell = row[c];
+                            const strValue = String(cell === undefined || cell === null ? "" : cell);
+                            if (strValue.trim()) {
+                                const matches = extractAllMatchesWithColumnLimit(strValue, patterns);
+                                for (let m = 0; m < matches.length; m++) {
+                                    const match = matches[m];
+                                    if (!uniqueSet.has(match)) {
+                                        uniqueSet.add(match);
+                                        fileResults.push(match);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    resolve(fileResults);
+                } catch(err) { 
+                    reject(err); 
+                }
+            };
+            reader.onerror = () => reject(new Error("文件读取失败"));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    async function processAllFiles() {
+        if (!dbLoaded || databaseMap.size === 0) { 
+            alert("请先点击「加载数据库」按钮，选择正确版本的软件数据库文件"); 
+            return; 
+        }
+        if (selectedFiles.length === 0) { 
+            alert("请先选择待提取的柜体表Excel文件"); 
+            return; 
+        }
+        
+        const patterns = getEnabledPatterns();
+        if (patterns.length === 0) { 
+            alert("请至少勾选一种提取格式"); 
+            return; 
+        }
+        
+        progressMsg.textContent = "正在处理 (限定扫描A~N列)...";
+        processFilesBtn.disabled = true;
+        rawResults = [];
+        
+        for (let f = 0; f < selectedFiles.length; f++) {
+            const file = selectedFiles[f];
+            try {
+                // 使用新限定列范围的提取函数
+                const extractedCodes = await processExtractFileWithColumnLimit(file, patterns);
+                for (let c = 0; c < extractedCodes.length; c++) {
+                    const code = extractedCodes[c];
+                    const dbInfoItem = databaseMap.get(code);
+                    rawResults.push({ 
+                        fileName: file.name, 
+                        extractedCode: code,
+                        status: dbInfoItem ? dbInfoItem.status : "未找到",
+                        codeStatus: dbInfoItem ? dbInfoItem.codeStatus : ""
+                    });
+                }
+                progressMsg.textContent = "已处理: " + rawResults.length + " 条匹配 (仅扫描A-N列)";
+            } catch(err) { 
+                alert("处理 " + file.name + " 失败: " + err.message); 
+            }
+        }
+        
+        mergeResults();
+        
+        processFilesBtn.disabled = false;
+        if (mergedResults.length === 0) { 
+            alert("未提取到任何匹配内容 (已限制扫描A~N列)"); 
+            return; 
+        }
+        
+        renderResults(mergedResults);
+        resultPanel.style.display = "block";
+        progressMsg.textContent = `处理完成！共提取 ${rawResults.length} 条匹配，合并后 ${mergedResults.length} 个唯一编码 (列限定A~N)`;
+        setTimeout(() => { progressMsg.textContent = ""; }, 4000);
+    }
+
+    // 合并相同编码的结果
+    function mergeResults() {
+        const codeMap = new Map();
+        
+        for (let i = 0; i < rawResults.length; i++) {
+            const item = rawResults[i];
+            if (!codeMap.has(item.extractedCode)) {
+                codeMap.set(item.extractedCode, {
+                    fileNames: new Set(),
+                    status: item.status,
+                    codeStatus: item.codeStatus
+                });
+            }
+            codeMap.get(item.extractedCode).fileNames.add(item.fileName);
+        }
+        
+        mergedResults = [];
+        for (let [code, data] of codeMap) {
+            const fileNamesArray = Array.from(data.fileNames);
+            mergedResults.push({
+                code: code,
+                fileNames: fileNamesArray.join("；"),
+                status: data.status,
+                codeStatus: data.codeStatus
+            });
+        }
+        
+        mergedResults.sort(function(a, b) {
+            if (a.code < b.code) return -1;
+            if (a.code > b.code) return 1;
+            return 0;
+        });
+    }
+
+    function renderResults(results) {
+        let foundCount = 0;
+        let notFoundCount = 0;
+        for (let i = 0; i < results.length; i++) {
+            if (results[i].status !== "未找到") {
+                foundCount++;
+            } else {
+                notFoundCount++;
+            }
+        }
+        
+        statsArea.innerHTML = '<div class="stat">📊 唯一编码数: <span>' + results.length + '</span></div>' +
+            '<div class="stat">✅ 数据库中存在: <span style="color:#198754;">' + foundCount + '</span></div>' +
+            '<div class="stat">❌ 未找到: <span style="color:#dc3545;">' + notFoundCount + '</span></div>' +
+            '<div class="stat">🔍 扫描范围: <span style="color:#0d6efd;">A列 至 N列</span></div>';
+        
+        let html = '<table><thead><tr>' +
+            '<th>提取的编码</th>' +
+            '<th>来源文件名</th>' +
+            '<th>软件内状态</th>' +
+            '<th>编码状态</th>' +
+            '</tr></thead><tbody>';
+        
+        for (let i = 0; i < results.length; i++) {
+            const item = results[i];
+            let statusHtml = '';
+            if (item.status === "未找到") {
+                statusHtml = '<span class="status-notfound">❌ 未找到</span>';
+            } else {
+                statusHtml = '<span class="status-found">✅ ' + escapeHtml(item.status) + '</span>';
+            }
+            
+            let codeStatusHtml = '';
+            if (item.codeStatus && item.codeStatus !== "") {
+                codeStatusHtml = '<span class="status-found">📌 ' + escapeHtml(item.codeStatus) + '</span>';
+            } else {
+                codeStatusHtml = '<span style="color:#6c757d;">—</span>';
+            }
+            
+            html += '<tr>' +
+                '<td><code style="font-size:14px; font-weight:bold;">' + escapeHtml(item.code) + '</code></td>' +
+                '<td style="max-width:350px; word-break:break-all; font-size:12px;">' + escapeHtml(item.fileNames) + '</td>' +
+                '<td>' + statusHtml + '</td>' +
+                '<td>' + codeStatusHtml + '</td>' +
+                '</tr>';
+        }
+        html += '</tbody></table>';
+        resultTableDiv.innerHTML = html;
+    }
+
+    // 导出CSV（包含编码状态列）
+    function exportToCSV() {
+        if (mergedResults.length === 0) { 
+            alert("无数据可导出"); 
+            return; 
+        }
+        
+        const headers = ["提取的编码", "文件名", "数据库状态", "编码状态", "扫描列范围"];
+        let csvLines = [headers.join(",")];
+        
+        for (let i = 0; i < mergedResults.length; i++) {
+            const item = mergedResults[i];
+            const row = [item.code, item.fileNames, item.status, item.codeStatus, "A~N列"];
+            const escapedRow = [];
+            for (let j = 0; j < row.length; j++) {
+                let val = String(row[j] === undefined ? "" : row[j]);
+                if (val.indexOf(",") >= 0 || val.indexOf("\"") >= 0 || val.indexOf("\n") >= 0) {
+                    val = '"' + val.replace(/"/g, '""') + '"';
+                }
+                escapedRow.push(val);
+            }
+            csvLines.push(escapedRow.join(","));
+        }
+        
+        const csvContent = csvLines.join("\n");
+        const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        const now = new Date();
+        const timestamp = now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate() + '_' + now.getHours() + '-' + now.getMinutes() + '-' + now.getSeconds();
+        link.setAttribute("download", "柜体表编码提取_A-N列限定_" + timestamp + ".csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+
+    function updateFileTags() {
+        if (selectedFiles.length === 0) { 
+            fileListArea.style.display = "none"; 
+            return; 
+        }
+        fileListArea.style.display = "flex";
+        let tagsHtml = '';
+        for (let i = 0; i < selectedFiles.length; i++) {
+            const file = selectedFiles[i];
+            tagsHtml += '<div class="file-tag">📄 ' + escapeHtml(file.name) + ' (' + (file.size/1024).toFixed(1) + 'KB)<span class="remove" data-index="' + i + '">✕</span></div>';
+        }
+        fileTags.innerHTML = tagsHtml;
+        
+        const removeButtons = document.querySelectorAll('.file-tag .remove');
+        for (let i = 0; i < removeButtons.length; i++) {
+            const btn = removeButtons[i];
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.getAttribute('data-index'));
+                selectedFiles.splice(idx, 1);
+                updateFileTags();
+                resultPanel.style.display = "none";
+            });
+        }
+    }
+
+    function handleExtractFiles(files) {
+        const validFiles = [];
+        for (let i = 0; i < files.length; i++) {
+            const f = files[i];
+            if (f.name.endsWith('.xlsx') || f.name.endsWith('.xls') || f.name.endsWith('.csv')) {
+                validFiles.push(f);
+            }
+        }
+        if (validFiles.length === 0) { 
+            alert("请选择有效的 Excel 文件"); 
+            return; 
+        }
+        for (let i = 0; i < validFiles.length; i++) {
+            selectedFiles.push(validFiles[i]);
+        }
+        updateFileTags();
+        resultPanel.style.display = "none";
+        progressMsg.textContent = "已选择 " + selectedFiles.length + " 个文件（提取时将自动限制A~N列）";
+    }
+
+    function clearFiles() { 
+        selectedFiles = []; 
+        updateFileTags(); 
+        resultPanel.style.display = "none"; 
+        rawResults = [];
+        mergedResults = [];
+        extractFileInput.value = ""; 
+    }
+    
+    function resetAll() { 
+        clearFiles(); 
+        resultPanel.style.display = "none"; 
+        rawResults = [];
+        mergedResults = [];
+    }
+    
+    function escapeHtml(str) { 
+        if (!str) return ''; 
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // 事件绑定
+    extractUploadArea.addEventListener('click', function() { extractFileInput.click(); });
+    extractUploadArea.addEventListener('dragover', function(e) { e.preventDefault(); extractUploadArea.style.borderColor = '#0d6efd'; });
+    extractUploadArea.addEventListener('dragleave', function() { extractUploadArea.style.borderColor = '#adb5bd'; });
+    extractUploadArea.addEventListener('drop', function(e) { 
+        e.preventDefault(); 
+        extractUploadArea.style.borderColor = '#adb5bd'; 
+        handleExtractFiles(e.dataTransfer.files); 
+    });
+    extractFileInput.addEventListener('change', function(e) { 
+        if (e.target.files.length) handleExtractFiles(e.target.files); 
+        extractFileInput.value = ""; 
+    });
+    clearFilesBtn.addEventListener('click', clearFiles);
+    processFilesBtn.addEventListener('click', processAllFiles);
+    exportCsvBtn.addEventListener('click', exportToCSV);
+    resetBtn.addEventListener('click', resetAll);
+
+    // 尝试加载之前保存的数据库
+    loadSavedDatabase();
+</script>
+</body>
 </html>   < / html>
